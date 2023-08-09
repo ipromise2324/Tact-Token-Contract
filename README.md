@@ -1,5 +1,14 @@
 # TACT Token and Wallet Contracts
-This repository contains two main smart contracts: Token and JettonDefaultWallet. These contracts are designed to manage and interact with the TACT token, a custom cryptocurrency.
+This repository contains two main smart contracts: Token and JettonDefaultWallet. These contracts are designed to manage and interact with the TACT token, a custom token.
+
+## How to install
+```bash
+    git clone https://github.com/ipromise2324/Tact-Token-Contract.git
+    cd Tact-Token-Contract
+    yarn install
+    yarn blueprint build # Run this command for two times to build both Token and JettonDefaultWallet contract
+    yarn blueprint test
+```
 
 ## Token Contract
 The Token contract represents the TACT token. It provides functionalities such as:
@@ -33,15 +42,6 @@ npx blueprint test
 -   `wrappers` - wrapper classes (implementing `Contract` from ton-core) for the contracts, including any [de]serialization primitives and compilation functions.
 -   `tests` - tests for the contracts.
 -   `scripts` - scripts used by the project, mainly the deployment scripts.
-
-## How to install
-```
-    git clone https://github.com/ipromise2324/Tact-Token-Contract.git
-    cd Tact-Token-Contract
-    yarn install
-    yarn blueprint build
-    yarn blueprint test
-```
 
 ### Build
 
