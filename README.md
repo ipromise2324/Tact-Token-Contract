@@ -6,8 +6,8 @@ This repository contains two main smart contracts: Token and JettonDefaultWallet
     git clone https://github.com/ipromise2324/Tact-Token-Contract.git
     cd Tact-Token-Contract
     yarn install
-    yarn blueprint build # Run this command for two times to build both Token and JettonDefaultWallet contract
-    yarn blueprint test
+    yarn build # Run this command for two times to build both Token and JettonDefaultWallet contract
+    yarn test
 ```
 
 ## Token Contract
