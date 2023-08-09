@@ -34,7 +34,14 @@ npx blueprint test
 -   `tests` - tests for the contracts.
 -   `scripts` - scripts used by the project, mainly the deployment scripts.
 
-## How to use
+## How to install
+```
+    git clone https://github.com/ipromise2324/Tact-Token-Contract.git
+    cd Tact-Token-Contract
+    yarn install
+    yarn blueprint build
+    yarn blueprint test
+```
 
 ### Build
 
