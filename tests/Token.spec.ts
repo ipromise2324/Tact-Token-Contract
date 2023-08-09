@@ -2,7 +2,7 @@
 import { Blockchain, SandboxContract } from '@ton-community/sandbox';
 import { beginCell, contractAddress, StateInit, toNano } from 'ton-core';
 import { Mint, Token, Content } from '../wrappers/Token';
-import { JettonDefaultWallet, TokenBurn } from '../wrappers/JettonDefaultWallet';
+import { JettonDefaultWallet, TokenBurn, TokenTransfer } from '../wrappers/JettonDefaultWallet';
 import '@ton-community/test-utils';
 describe('Token', () => {
     let blockchain: Blockchain;
@@ -45,7 +45,7 @@ describe('Token', () => {
         // console.log(await token.getTokenDecimals());
     });
 
-    it('should mint', async () => {
+    it('should mint tokens', async () => {
         const totalSuplyBefore = await token.getGetTotalSupply();
         const mintAmount = 10n;
         const Mint: Mint = {
@@ -64,17 +64,17 @@ describe('Token', () => {
         });
 
         const totalSuplyAfter = await token.getGetTotalSupply();
-        expect(totalSuplyBefore + mintAmount).toEqual(totalSuplyAfter); // check that the total supply has increased by 1
+        expect(totalSuplyBefore + mintAmount).toEqual(totalSuplyAfter); // check that the total supply has increased by mintAmount
 
         const playerWallet = await token.getGetWalletAddress(player.address);
         jettonWallet = blockchain.openContract(JettonDefaultWallet.fromAddress(playerWallet));
         const walletData = await jettonWallet.getGetWalletData();
         expect(walletData.owner).toEqualAddress(player.address); // check that the wallet is owned by the player
-        expect(walletData.balance).toEqual(mintAmount); // check that the wallet has 1 token
+        expect(walletData.balance).toEqual(mintAmount); // check that the wallet has mintAmount tokens
     });
 
     it('should burn tokens', async () => {
-        // 1. First, we need to mint some tokens to burn later
+        // mint some tokens to burn
         const player = await blockchain.treasury('player');
         const mintAmount = 1000n;
         await token.send(player.getSender(), {
@@ -84,13 +84,11 @@ describe('Token', () => {
             amount: mintAmount,
         });
 
-        // 2. Confirm that the tokens were minted
         const playerWalletAddress = await token.getGetWalletAddress(player.address);
         jettonWallet = blockchain.openContract(JettonDefaultWallet.fromAddress(playerWalletAddress));
         let walletData = await jettonWallet.getGetWalletData();
-        expect(walletData.balance).toEqual(mintAmount);
+        expect(walletData.balance).toEqual(mintAmount); // check that the wallet has mintAmount tokens
 
-        // 3. Burn the tokens
         const burnAmount = 500n;
         const burnResult = await jettonWallet.send(player.getSender(), {
             value: toNano('10'),
@@ -102,8 +100,49 @@ describe('Token', () => {
             responseAddress: player.address, // Optional, set if needed
         });
 
-        // 4. Confirm that the tokens were burned
         walletData = await jettonWallet.getGetWalletData();
-        expect(walletData.balance).toEqual(mintAmount - burnAmount);
+        expect(walletData.balance).toEqual(mintAmount - burnAmount); // check that the wallet has mintAmount - burnAmount tokens
     });
+
+    it('should transfer tokens', async () => {
+        // Initial mint to the sender
+        const sender = await blockchain.treasury('sender');
+        const receiver = await blockchain.treasury('receiver');
+        const initialMintAmount = 1000n;
+        const transferAmount = 500n;
+    
+        const mintMessage: Mint = {
+            $$type: 'Mint',
+            amount: initialMintAmount,
+        };
+        await token.send(sender.getSender(), { value: toNano('10') }, mintMessage);
+    
+        const senderWalletAddress = await token.getGetWalletAddress(sender.address); // get sender's wallet
+        const senderWallet = blockchain.openContract(JettonDefaultWallet.fromAddress(senderWalletAddress));
+    
+        // Transfer tokens from sender's wallet to receiver
+        const transferMessage: TokenTransfer = {
+            $$type: 'TokenTransfer',
+            queryId: 1n, // or any unique identifier
+            amount: transferAmount,
+            destination: receiver.address,
+            responseDestination: null, // or some address if needed
+            customPayload: null, // or some payload if needed
+            forwardTonAmount: 0n,
+            forwardPayload: beginCell().endCell(), // or some payload if needed
+        };
+        const transferResult = await senderWallet.send(sender.getSender(), { value: toNano('10') }, transferMessage);
+    
+        const receiverWalletAddress = await token.getGetWalletAddress(receiver.address);
+        const receiverWallet = blockchain.openContract(JettonDefaultWallet.fromAddress(receiverWalletAddress));
+    
+        const senderWalletDataAfterTransfer = await senderWallet.getGetWalletData();
+        const receiverWalletDataAfterTransfer = await receiverWallet.getGetWalletData();
+    
+        expect(senderWalletDataAfterTransfer.balance).toEqual(initialMintAmount - transferAmount); // check that the sender transferred the right amount of tokens
+        expect(receiverWalletDataAfterTransfer.balance).toEqual(transferAmount); // check that the receiver received the right amount of tokens
+    });
+    
+    
 });
+
