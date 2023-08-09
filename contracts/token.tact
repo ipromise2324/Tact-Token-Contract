@@ -1,6 +1,6 @@
 import "@stdlib/deploy";
 import "@stdlib/ownable";
-import "./wallet";
+import "./jetton_default_wallet";
 message Mint {
     amount: Int;
 }
