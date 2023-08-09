@@ -1,5 +1,5 @@
 # TACT Token and Wallet Contracts
-This repository contains two main smart contracts: Token and JettonDefaultWallet. These contracts are designed to manage and interact with the TACT token, a custom token.
+This repository contains two main `TON` smart contracts: Token and JettonDefaultWallet. These contracts are designed to manage and interact with the TACT token, a custom token.
 
 ## How to install
 ```bash
