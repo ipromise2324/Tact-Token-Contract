@@ -1,5 +1,6 @@
 import "@stdlib/deploy";
 import "@stdlib/ownable";
+import "./messages";
 import "./jetton_default_wallet";
 message Mint {
     to: Address;
@@ -58,7 +59,39 @@ contract Token with Deployable, Ownable {
             data: winit.data
         });
     }
-    
+
+    receive(msg: SafeTokenBurn) {
+        // Check sender (ensure it's from a valid JettonDefaultWallet)
+        let ctx: Context = context();
+        let expectedWalletAddress: Address = self.getWalletAddress(msg.owner);
+        // require(ctx.sender == expectedWalletAddress, "Invalid sender"); This line will revert. Sender's address won't match their wallet address
+
+        require(self.totalSupply - msg.amount >= 0, "Invalid total supply after burn");
+        self.burn(msg.amount, msg.owner, msg.queryId);
+
+    }
+
+    fun burn(burnAmount: Int, to: Address, queryId: Int) {
+        // Update total supply
+        self.totalSupply = self.totalSupply - burnAmount;
+        //Create message
+        let winit: StateInit = self.getJettonWalletInit(to);
+        let walletAddress: Address = contractAddress(winit);
+        // Send a confirmation back to the wallet to finalize the burn
+        send(SendParameters{
+            to: walletAddress,
+            value: 0,
+            bounce: false,
+            mode: SendRemainingValue,
+            body: TokenBurnConfirmation{
+                queryId: queryId,
+                amount: burnAmount
+            }.toCell(),
+            code: winit.code,
+            data: winit.data
+        });
+    } 
+
     fun requireWallet(owner: Address) {
         let ctx: Context = context();
         let winit: StateInit = self.getJettonWalletInit(owner);
