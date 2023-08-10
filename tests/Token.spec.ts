@@ -176,7 +176,7 @@ describe('Token', () => {
         const burnResult = await token.send(player.getSender(), {
             value: toNano('10'),
         }, {
-            $$type: 'TokenBurn',
+            $$type: 'SafeTokenBurn',
             queryId: 0n, // You can set this as needed
             amount: burnAmount,
             owner: player.address,
