@@ -18,6 +18,7 @@ contract Token with Deployable, Ownable {
     owner: Address;
     content: Content;
     mintables: Bool;
+    
     init(owner: Address, content: Content) {
         self.totalSupply = 0;
         self.owner = owner;
@@ -28,6 +29,17 @@ contract Token with Deployable, Ownable {
     receive(msg: Mint) {
         self.requireOwner(); // Only owner can mint
         self.mint(msg.to, msg.amount, msg.to);
+    }
+
+    receive(msg: SafeTokenBurn) {
+        // Check sender (ensure it's from a valid JettonDefaultWallet)
+        let ctx: Context = context();
+        let expectedWalletAddress: Address = self.getWalletAddress(msg.owner);
+        // require(ctx.sender == expectedWalletAddress, "Invalid sender"); This line will revert. Sender's address won't match their wallet address
+
+        require(self.totalSupply - msg.amount >= 0, "Invalid total supply after burn");
+        self.burn(msg.amount, msg.owner, msg.queryId);
+
     }
 
     //
@@ -58,17 +70,6 @@ contract Token with Deployable, Ownable {
             code: winit.code,
             data: winit.data
         });
-    }
-
-    receive(msg: SafeTokenBurn) {
-        // Check sender (ensure it's from a valid JettonDefaultWallet)
-        let ctx: Context = context();
-        let expectedWalletAddress: Address = self.getWalletAddress(msg.owner);
-        // require(ctx.sender == expectedWalletAddress, "Invalid sender"); This line will revert. Sender's address won't match their wallet address
-
-        require(self.totalSupply - msg.amount >= 0, "Invalid total supply after burn");
-        self.burn(msg.amount, msg.owner, msg.queryId);
-
     }
 
     fun burn(burnAmount: Int, to: Address, queryId: Int) {
