@@ -38,6 +38,18 @@ message(0x7bdd97de) TokenBurnNotification {
     responseAddress: Address?;
 }
 
+message TokenBurnConfirmation {
+    queryId: Int as uint64;
+    amount: Int as coins;
+}
+
+message SafeTokenBurn {
+    queryId: Int as uint64;
+    amount: Int as coins;
+    owner: Address;
+    responseAddress: Address?;
+}
+
 message(0xd53276db) TokenExcesses {
     queryId: Int as uint64;
 }
