@@ -104,6 +104,7 @@ contract JettonDefaultWallet {
         }
     }
 
+    // This Burn msg only decrease balance of wallet, but not decrease total supply
     receive(msg: TokenBurn) {
 
         // Check sender
@@ -133,6 +134,7 @@ contract JettonDefaultWallet {
         });
     }
 
+    // This safe burn msg decrease balance of wallet and total supply in the master contract
     receive(msg: TokenBurnConfirmation) {
         // Check sender (ensure it's from the token contract)
         let ctx: Context = context();
