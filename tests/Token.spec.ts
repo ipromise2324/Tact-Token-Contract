@@ -147,6 +147,60 @@ describe('Token', () => {
         expect(receiverWalletDataAfterTransfer.balance).toEqual(transferAmount); // check that the receiver received the right amount of tokens
     });
     
+    it('should burn tokens safely', async () => {
+
+        // Check totalSupply in token contract
+        const totalSupplyIntitail = await token.getGetTotalSupply();
+        console.log('totalSupplyIntitail: ',totalSupplyIntitail);
+
+        // mint some tokens to burn
+        const player = await blockchain.treasury('player');
+        const mintAmount = 1000n;
+        await token.send(deployer.getSender(), {
+            value: toNano('10'),
+        }, {
+            $$type: 'Mint',
+            to: player.address,
+            amount: mintAmount
+        });
+
+        // Check totalSupply in token contract
+        const totalSupplyBeforeBurn = await token.getGetTotalSupply();
+        console.log('totalSupplyBeforeBurn: ',totalSupplyBeforeBurn);
+    
+        const playerWalletAddress = await token.getGetWalletAddress(player.address);
+        jettonWallet = blockchain.openContract(JettonDefaultWallet.fromAddress(playerWalletAddress));
+        let walletData = await jettonWallet.getGetWalletData();
+        expect(walletData.balance).toEqual(mintAmount); // check that the wallet has mintAmount tokens
+    
+        const burnAmount = 500n;
+    
+        // Player sends TokenBurn to token contract
+        const burnResult = await token.send(player.getSender(), {
+            value: toNano('10'),
+        }, {
+            $$type: 'TokenBurn',
+            queryId: 0n, // You can set this as needed
+            amount: burnAmount,
+            owner: player.address,
+            responseAddress: playerWalletAddress, // This should be the wallet contract address to notify it about the burn
+        });
+    
+        // Wait for the token contract to process the burn and send back the TokenBurnConfirmation to the wallet
+        // This step might require some delay or a mechanism to wait for the confirmation message
+        // For the sake of this example, I'm using a simple delay
+        await new Promise(resolve => setTimeout(resolve, 2000)); // 1 seconds delay
+    
+        // Check totalSupply in token contract
+        const totalSupplyAfterBurn = await token.getGetTotalSupply();
+        console.log('totalSupplyAfterBurn: ',totalSupplyAfterBurn);
+        expect(totalSupplyAfterBurn).toEqual(totalSupplyBeforeBurn - burnAmount);
+    
+        // Check the balance in the wallet contract after receiving the TokenBurnConfirmation
+        walletData = await jettonWallet.getGetWalletData();
+        console.log('walletData.balance: ',walletData.balance);
+        expect(walletData.balance).toEqual(mintAmount - burnAmount); // check that the wallet has mintAmount - burnAmount tokens
+    });
     
 });
 
