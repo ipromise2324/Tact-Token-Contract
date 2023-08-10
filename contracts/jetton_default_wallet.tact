@@ -33,7 +33,7 @@ contract JettonDefaultWallet {
             fwdCount = 2;
         }
         require(ctx.value > fwdCount * fwdFee + 2 * self.gasConsumption + self.minTonsForStorage, "Invalid value");
-        
+
         // Send tokens
         let init: StateInit = initOf JettonDefaultWallet(self.master, msg.destination);
         let walletAddress: Address = contractAddress(init);
@@ -131,6 +131,16 @@ contract JettonDefaultWallet {
                 responseAddress: self.owner
             }.toCell()
         });
+    }
+
+    receive(msg: TokenBurnConfirmation) {
+        // Check sender (ensure it's from the token contract)
+        let ctx: Context = context();
+        require(ctx.sender == self.master, "Invalid sender");
+
+        // Decrease the wallet balance
+        self.balance = self.balance - msg.amount;
+        require(self.balance >= 0, "Invalid balance after burn");
     }
 
     bounced(msg: Slice) {
