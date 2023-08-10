@@ -29,8 +29,8 @@ The tests in this repository cover various functionalities of the contracts:
 
 1. `Deployment`: Ensures that the Token contract can be successfully deployed.
 2. `Minting`: Tests the ability to mint new tokens and add them to a user's wallet.
-3. `Token Transfer`: Validates that tokens can be transferred from one wallet to another.
-4. `Token Burn`: Ensures that tokens can be burned, reducing the total supply.
+3. `Token Burn`: Confirms the ability to burn tokens, which results in a reduction of the wallet's balance. However, the overall total supply remains unaffected.
+4. `Safe Token Burn`: Tests the secure burning method, ensuring both the wallet balance and total supply are reduced.
 
 To run the tests, use the command:
 ```
