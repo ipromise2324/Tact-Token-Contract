@@ -149,10 +149,6 @@ describe('Token', () => {
     
     it('should burn tokens safely', async () => {
 
-        // Check totalSupply in token contract
-        const totalSupplyIntitail = await token.getGetTotalSupply();
-        console.log('totalSupplyIntitail: ',totalSupplyIntitail);
-
         // mint some tokens to burn
         const player = await blockchain.treasury('player');
         const mintAmount = 1000n;
@@ -164,9 +160,8 @@ describe('Token', () => {
             amount: mintAmount
         });
 
-        // Check totalSupply in token contract
+        // Check totalSupply in token contract before burning 
         const totalSupplyBeforeBurn = await token.getGetTotalSupply();
-        console.log('totalSupplyBeforeBurn: ',totalSupplyBeforeBurn);
     
         const playerWalletAddress = await token.getGetWalletAddress(player.address);
         jettonWallet = blockchain.openContract(JettonDefaultWallet.fromAddress(playerWalletAddress));
@@ -189,16 +184,14 @@ describe('Token', () => {
         // Wait for the token contract to process the burn and send back the TokenBurnConfirmation to the wallet
         // This step might require some delay or a mechanism to wait for the confirmation message
         // For the sake of this example, I'm using a simple delay
-        await new Promise(resolve => setTimeout(resolve, 2000)); // 1 seconds delay
+        await new Promise(resolve => setTimeout(resolve, 500)); // 0.5 seconds delay
     
-        // Check totalSupply in token contract
+        // Check totalSupply in token contract after burning
         const totalSupplyAfterBurn = await token.getGetTotalSupply();
-        console.log('totalSupplyAfterBurn: ',totalSupplyAfterBurn);
         expect(totalSupplyAfterBurn).toEqual(totalSupplyBeforeBurn - burnAmount);
     
         // Check the balance in the wallet contract after receiving the TokenBurnConfirmation
         walletData = await jettonWallet.getGetWalletData();
-        console.log('walletData.balance: ',walletData.balance);
         expect(walletData.balance).toEqual(mintAmount - burnAmount); // check that the wallet has mintAmount - burnAmount tokens
     });
     
