@@ -2,6 +2,7 @@ import "@stdlib/deploy";
 import "@stdlib/ownable";
 import "./jetton_default_wallet";
 message Mint {
+    to: Address;
     amount: Int;
 }
 
@@ -24,13 +25,8 @@ contract Token with Deployable, Ownable {
     }
 
     receive(msg: Mint) {
-        let ctx: Context = context();
-        self.mint(ctx.sender, msg.amount, ctx.sender);
-    }
-
-    receive("Mint!") {
-        let ctx: Context = context();
-        self.mint(ctx.sender, 1000000000, ctx.sender);
+        self.requireOwner(); // Only owner can mint
+        self.mint(msg.to, msg.amount, msg.to);
     }
 
     //

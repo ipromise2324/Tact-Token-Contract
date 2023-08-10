@@ -1,5 +1,5 @@
 //import { Content } from './../build/Token/tact_Token';
-import { Blockchain, SandboxContract } from '@ton-community/sandbox';
+import { Blockchain, SandboxContract, TreasuryContract } from '@ton-community/sandbox';
 import { beginCell, contractAddress, StateInit, toNano } from 'ton-core';
 import { Mint, Token, Content } from '../wrappers/Token';
 import { JettonDefaultWallet, TokenBurn, TokenTransfer } from '../wrappers/JettonDefaultWallet';
@@ -8,10 +8,11 @@ describe('Token', () => {
     let blockchain: Blockchain;
     let token: SandboxContract<Token>;
     let jettonWallet: SandboxContract<JettonDefaultWallet>;
+    let deployer: SandboxContract<TreasuryContract>;
     beforeEach(async () => {
         blockchain = await Blockchain.create();
 
-        const deployer = await blockchain.treasury('deployer');
+        deployer = await blockchain.treasury('deployer');
         const content: Content= {
             $$type: 'Content',
             name: "I Promise Token",
@@ -46,19 +47,20 @@ describe('Token', () => {
     });
 
     it('should mint tokens', async () => {
+        const player = await blockchain.treasury('player');
         const totalSuplyBefore = await token.getGetTotalSupply();
         const mintAmount = 10n;
         const Mint: Mint = {
             $$type: 'Mint',
-            amount: mintAmount,
+            to: player.address,
+            amount: mintAmount
         };
-        const player = await blockchain.treasury('player');
-        const mintResult = await token.send(player.getSender(), {
+        const mintResult = await token.send(deployer.getSender(), {
             value: toNano('10'),
         },Mint);
 
         expect(mintResult.transactions).toHaveTransaction({
-            from: player.address,
+            from: deployer.address,
             to: token.address,
             success: true,
         });
@@ -77,11 +79,12 @@ describe('Token', () => {
         // mint some tokens to burn
         const player = await blockchain.treasury('player');
         const mintAmount = 1000n;
-        await token.send(player.getSender(), {
+        await token.send(deployer.getSender(), {
             value: toNano('10'),
         }, {
             $$type: 'Mint',
-            amount: mintAmount,
+            to: player.address,
+            amount: mintAmount
         });
 
         const playerWalletAddress = await token.getGetWalletAddress(player.address);
@@ -114,8 +117,9 @@ describe('Token', () => {
         const mintMessage: Mint = {
             $$type: 'Mint',
             amount: initialMintAmount,
+            to: sender.address,
         };
-        await token.send(sender.getSender(), { value: toNano('10') }, mintMessage);
+        await token.send(deployer.getSender(), { value: toNano('10') }, mintMessage);
     
         const senderWalletAddress = await token.getGetWalletAddress(sender.address); // get sender's wallet
         const senderWallet = blockchain.openContract(JettonDefaultWallet.fromAddress(senderWalletAddress));
