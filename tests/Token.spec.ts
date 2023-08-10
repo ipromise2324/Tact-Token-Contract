@@ -75,6 +75,7 @@ describe('Token', () => {
         expect(walletData.balance).toEqual(mintAmount); // check that the wallet has mintAmount tokens
     });
 
+    // This Burn test only decrease balance of wallet, but not decrease total supply
     it('should burn tokens', async () => {
         // mint some tokens to burn
         const player = await blockchain.treasury('player');
@@ -107,6 +108,7 @@ describe('Token', () => {
         expect(walletData.balance).toEqual(mintAmount - burnAmount); // check that the wallet has mintAmount - burnAmount tokens
     });
 
+    // This safe burn test decrease balance of wallet and total supply in the master contract
     it('should transfer tokens', async () => {
         // Initial mint to the sender
         const sender = await blockchain.treasury('sender');
