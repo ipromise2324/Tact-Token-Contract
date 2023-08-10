@@ -148,7 +148,7 @@ describe('Token', () => {
         expect(receiverWalletDataAfterTransfer.balance).toEqual(transferAmount); // check that the receiver received the right amount of tokens
     });
     
-        // This safe burn test decrease balance of wallet and total supply in the master contract
+    // This safe burn test decrease balance of wallet and total supply in the master contract
     it('should burn tokens safely', async () => {
 
         // mint some tokens to burn
