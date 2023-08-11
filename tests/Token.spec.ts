@@ -182,6 +182,13 @@ describe('Token', () => {
             owner: player.address,
             responseAddress: playerWalletAddress, // This should be the wallet contract address to notify it about the burn
         });
+        
+        expect(burnResult.transactions).toHaveTransaction({
+            from: player.address,
+            to: token.address,
+            success: true,
+        });
+        //console.log('burnResult', burnResult);
     
         // Wait for the token contract to process the burn and send back the TokenBurnConfirmation to the wallet
         // This step might require some delay or a mechanism to wait for the confirmation message
