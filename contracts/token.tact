@@ -32,10 +32,12 @@ contract Token with Deployable, Ownable {
     }
 
     receive(msg: SafeTokenBurn) {
+        let ctx: Context = context();
+        require(ctx.sender == msg.owner, "Only owner can burn tokens"); // avoid case that the Sender is not the owner
         require(self.totalSupply - msg.amount >= 0, "Invalid total supply after burn");
         self.burn(msg.amount, msg.owner, msg.queryId);
-
     }
+
     //
     // Private Methods
     //
